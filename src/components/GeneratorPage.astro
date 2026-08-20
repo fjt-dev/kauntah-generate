@@ -1,0 +1,287 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { digitImages, type ThemeName } from "../data/digitImages";
+
+interface Props {
+  locale: "en" | "ja";
+}
+
+const { locale } = Astro.props;
+const isJa = locale === "ja";
+const themeNames = Object.keys(digitImages) as ThemeName[];
+const initialTheme: ThemeName = "normal-150";
+const endpoint = "https://counter.fjtd.dev/counter";
+
+const copy = isJa
+  ? {
+      title: "Kauntah — アクセスカウンタージェネレーター",
+      description: "Kauntah — 貼るだけで使えるレトロなアクセスカウンター",
+      home: "Kauntahジェネレータ ホーム",
+      brand: "Kauntahジェネレータ",
+      preview: "プレビュー版",
+      nav: "メインナビゲーション",
+      generator: "ジェネレーター",
+      how: "仕組み",
+      language: "言語",
+      powered: "Cloudflare Workers上で構築",
+      lead: "貼るだけで使える、レトロなアクセスカウンター。登録もAPIキーもカウンターIDも不要です。Kauntahがあなたのドメインを自動で識別します。",
+      cta: "カウンターを作る ↓",
+      heroPreview: "カウンターのプレビュー",
+      makeTitle: "カウンターを作る。",
+      makeDescription: "好みのデザインを選び、生成されたコードをコピーして、あなたのサイトに貼り付けるだけです。",
+      customize: "カウンターを設定",
+      theme: "テーマ",
+      offset: "初期加算値",
+      digits: "選択したKauntahテーマの数字0から9",
+      copyCode: "コードをコピー",
+      codeFormat: "コード形式",
+      copied: "コピーしました",
+      selected: "選択しました",
+      noIdTitle: "カウンターIDは不要です。",
+      noIdBody: "Kauntahが設置先のドメインを自動で識別し、サイトごとに独立したカウントを保存します。",
+      simpleTitle: "シンプルな設計。",
+      simpleDescription: "アカウントも管理画面も余計な設定もない、スモールウェブのための小さな道具です。",
+      features: [
+        ["01 / PASTE", "タグを1行貼る", "生成された1行をHTMLに追加します。アカウントもAPIキーも必要ありません。"],
+        ["02 / COUNT", "確実に数える", "Cloudflare Durable Objectsにより、同時アクセスでも安全にカウントします。"],
+        ["03 / ENJOY", "懐かしさを楽しむ", "あなたのサイトに似合う、レトロなカウンターテーマを選べます。"],
+      ],
+      footer: "Kauntah — いちばん簡単なアクセスカウンター。",
+      illustration: "イラストレーション：",
+    }
+  : {
+      title: "Kauntah — Access counter generator",
+      description: "Kauntah — A delightfully simple retro hit counter for your website",
+      home: "Kauntah Generator home",
+      brand: "Kauntah Generator",
+      preview: "Preview",
+      nav: "Main navigation",
+      generator: "Generator",
+      how: "How it works",
+      language: "Language",
+      powered: "Powered by Cloudflare Workers",
+      lead: "A delightfully simple retro hit counter. No signup, API key, or counter ID required—Kauntah recognizes your domain automatically.",
+      cta: "Build your counter ↓",
+      heroPreview: "Counter preview",
+      makeTitle: "Make yours.",
+      makeDescription: "Choose a look, copy the generated code, and paste it into your website.",
+      customize: "Customize your counter",
+      theme: "Theme",
+      offset: "Starting offset",
+      digits: "Digits zero through nine in the selected Kauntah theme",
+      copyCode: "Copy code",
+      codeFormat: "Code format",
+      copied: "Copied!",
+      selected: "Selected",
+      noIdTitle: "No counter ID required.",
+      noIdBody: "Kauntah identifies the host website automatically and keeps a separate count for every domain.",
+      simpleTitle: "Simple by design.",
+      simpleDescription: "A tiny tool for the small web, without accounts, dashboards, or unnecessary setup.",
+      features: [
+        ["01 / PASTE", "Paste one tag", "Add the generated line to your HTML. No account or API key is needed."],
+        ["02 / COUNT", "Count reliably", "Cloudflare Durable Objects keep increments safe, even during concurrent visits."],
+        ["03 / ENJOY", "Enjoy the nostalgia", "Pick a retro counter theme that feels right at home on your website."],
+      ],
+      footer: "Kauntah — The easiest hit counter.",
+      illustration: "Illustration credits:",
+    };
+
+const initialUrl = endpoint;
+const initialSnippet = `<img src="${initialUrl}" alt="Hit counter" referrerpolicy="origin" />`;
+---
+
+<BaseLayout lang={locale} title={copy.title} description={copy.description}>
+  <header class="shell nav">
+    <div class="brand-group">
+      <a class="brand" href="#top" aria-label={copy.home}><span>{copy.brand}</span></a>
+      <span class="preview-badge">{copy.preview}</span>
+    </div>
+    <nav class="nav-links" aria-label={copy.nav}>
+      <a class="nav-link" href="#generator">{copy.generator}</a>
+      <a class="nav-link" href="#how">{copy.how}</a>
+      <a class="nav-link" href="https://counter.fjtd.dev/">GitHub ↗</a>
+      <span class="language-switch" aria-label={copy.language}>
+        <a href="/" lang="en" aria-current={!isJa ? "page" : undefined}>EN</a>
+        <a href="/ja/" lang="ja" aria-current={isJa ? "page" : undefined}>日本語</a>
+      </span>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="shell hero">
+      <div>
+        <p class="eyebrow">{copy.powered}</p>
+        <h1>Kauntah<em>.</em></h1>
+        <p class="lead">{copy.lead}</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#generator">{copy.cta}</a>
+        </div>
+      </div>
+      <div class="hero-counter" aria-label={copy.heroPreview}>
+        <div class="counter-strip hero-strip">
+          {digitImages[initialTheme].slice(5).map((src, index) => (
+            <img src={src} data-hero-image alt={String(index + 5)} width="34" height="150" />
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section class="shell section" id="generator">
+      <div class="section-heading">
+        <h2>{copy.makeTitle}</h2>
+        <p>{copy.makeDescription}</p>
+      </div>
+
+      <div class="generator">
+        <form class="settings" id="settings">
+          <h3 class="panel-title"><span class="step">1</span>{copy.customize}</h3>
+
+          <div class="field">
+            <label for="asset">{copy.theme}</label>
+            <select id="asset" name="asset">
+              {themeNames.map((theme) => <option value={theme}>{theme}</option>)}
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="offset">{copy.offset}</label>
+            <input id="offset" name="offset" type="number" min="0" max="1000000" value="0" inputmode="numeric" />
+            <span class="help">0–1,000,000</span>
+          </div>
+
+          <div class="mini-preview" aria-live="polite">
+            <div class="counter-strip" data-digit-strip aria-label={copy.digits}>
+              {digitImages[initialTheme].map((src, digit) => (
+                <img src={src} alt={String(digit)} width="34" height="150" />
+              ))}
+            </div>
+          </div>
+        </form>
+
+        <div class="output">
+          <h3 class="panel-title"><span class="step">2</span>{copy.copyCode}</h3>
+          <div class="tabs" role="tablist" aria-label={copy.codeFormat}>
+            <button class="tab" type="button" role="tab" aria-selected="true" data-format="html">HTML</button>
+            <button class="tab" type="button" role="tab" aria-selected="false" data-format="markdown">Markdown</button>
+            <button class="tab" type="button" role="tab" aria-selected="false" data-format="url">URL</button>
+          </div>
+          <div class="code-wrap">
+            <pre id="code" tabindex="0">{initialSnippet}</pre>
+            <button class="copy" id="copy" type="button">{copy.copyCode}</button>
+          </div>
+          <div class="notice">
+            <span aria-hidden="true">✦</span>
+            <div><strong>{copy.noIdTitle}</strong><br />{copy.noIdBody}</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="shell section" id="how">
+      <div class="section-heading">
+        <h2>{copy.simpleTitle}</h2>
+        <p>{copy.simpleDescription}</p>
+      </div>
+      <div class="features">
+        {copy.features.map(([number, title, description]) => (
+          <article class="feature">
+            <span class="feature-number">{number}</span>
+            <h3>{title}</h3>
+            <p>{description}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  </main>
+
+  <footer class="shell">
+    <span>{copy.footer}</span>
+    <span>{copy.illustration} Kokage Kusaka · <a href="https://counter.fjtd.dev/">GitHub</a></span>
+  </footer>
+
+  <script is:inline define:vars={{ digitImages, endpoint, copyLabels: { copy: copy.copyCode, copied: copy.copied, selected: copy.selected } }}>
+    const asset = document.querySelector("#asset");
+    const offset = document.querySelector("#offset");
+    const code = document.querySelector("#code");
+    const copyButton = document.querySelector("#copy");
+    const tabs = [...document.querySelectorAll(".tab")];
+    const heroImages = [...document.querySelectorAll("[data-hero-image]")];
+    const digitStrip = document.querySelector("[data-digit-strip]");
+    let format = "html";
+
+    function counterUrl() {
+      const params = new URLSearchParams();
+      if (asset.value !== "normal-150") params.set("asset", asset.value);
+      const initial = Math.max(0, Math.min(1000000, Number(offset.value) || 0));
+      if (initial) params.set("offset", String(initial));
+      return endpoint + (params.size ? `?${params.toString()}` : "");
+    }
+
+    function snippet() {
+      const url = counterUrl();
+      if (format === "url") return url;
+      if (format === "markdown") return `![Hit counter](${url})`;
+      return `<img src="${url}" alt="Hit counter" referrerpolicy="origin" />`;
+    }
+
+    function makeDigitImage(src, digit, compact) {
+      const image = document.createElement("img");
+      image.src = src;
+      image.alt = String(digit);
+      image.width = compact ? 23 : 34;
+      image.height = compact ? 100 : 150;
+      return image;
+    }
+
+    function renderPreview() {
+      const images = digitImages[asset.value];
+      const compact = asset.value.endsWith("-100");
+
+      heroImages.forEach((image, index) => {
+        image.src = images[index + 5];
+        image.width = compact ? 23 : 34;
+        image.height = compact ? 100 : 150;
+      });
+
+      digitStrip.replaceChildren(...images.map((src, digit) => makeDigitImage(src, digit, compact)));
+    }
+
+    function update() {
+      code.textContent = snippet();
+      renderPreview();
+    }
+
+    tabs.forEach((tab) => tab.addEventListener("click", () => {
+      format = tab.dataset.format;
+      tabs.forEach((item) => item.setAttribute("aria-selected", String(item === tab)));
+      update();
+    }));
+
+    [asset, offset].forEach((control) => control.addEventListener("input", update));
+
+    copyButton.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(snippet());
+        copyButton.textContent = copyLabels.copied;
+        setTimeout(() => { copyButton.textContent = copyLabels.copy; }, 1300);
+      } catch {
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(code);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        copyButton.textContent = copyLabels.selected;
+      }
+    });
+
+    code.addEventListener("click", () => {
+      const range = document.createRange();
+      range.selectNodeContents(code);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+    });
+
+    document.querySelector("#settings").addEventListener("submit", (event) => event.preventDefault());
+  </script>
+</BaseLayout>
