@@ -154,7 +154,7 @@ const copy = isJa
 
           <div class="mini-preview" aria-live="polite">
             <div class="counter-strip" data-digit-strip aria-label={copy.preview}>
-              <img src={digitImages[initialTheme][1]} alt="1" />
+              <img src={digitImages[initialTheme][0]} alt="0" />
             </div>
           </div>
 
@@ -298,7 +298,7 @@ const copy = isJa
       animation.disabled = asset.value !== "blue2-100";
       if (animation.disabled) animation.value = "0";
       const images = animationEnabled() ? rule34Images : digitImages[asset.value];
-      const previewValue = String(offsetValue() + 1).padStart(paddingValue(), "0");
+      const previewValue = String(offsetValue()).padStart(paddingValue(), "0");
       digitStrip.replaceChildren(...[...previewValue].map((digit) => makeDigitImage(images[Number(digit)], digit)));
       updateThemeSelection();
     }
