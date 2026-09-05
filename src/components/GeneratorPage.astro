@@ -10,6 +10,7 @@ const { locale } = Astro.props;
 const isJa = locale === "ja";
 const themeNames: ThemeName[] = ["normal-150", "blue2-150", "green-100", "blue2-100"];
 const initialTheme: ThemeName = "normal-150";
+const rule34Images = Array.from({ length: 10 }, (_, digit) => `/images/rule34/${digit}.gif`);
 const endpoint = "https://counter.fjtd.dev/counter";
 
 const copy = isJa
@@ -36,6 +37,10 @@ const copy = isJa
       paramValue: "値",
       theme: "テーマ",
       themeDescription: "カウンター画像のテーマを選択します。",
+      animation: "アニメーション",
+      animationDescription: "blue2-100専用です。動きのあるrule34版に切り替えます。",
+      animationNone: "なし（静止画）",
+      animationRule34: "あり（rule34）",
       offset: "初期加算値",
       offsetDescription: "カウントに加算する初期値です。0〜1,000,000。",
       offsetError: "0〜1,000,000の整数を入力してください。",
@@ -75,6 +80,10 @@ const copy = isJa
       paramValue: "Value",
       theme: "Theme",
       themeDescription: "Select the image theme used by the counter.",
+      animation: "Animation",
+      animationDescription: "Available for blue2-100 only. Switch to the animated rule34 version.",
+      animationNone: "None (static)",
+      animationRule34: "On (rule34)",
       offset: "Starting offset",
       offsetDescription: "Add a starting value to the counter, from 0 to 1,000,000.",
       offsetError: "Enter a whole number from 0 to 1,000,000.",
@@ -167,6 +176,17 @@ const copy = isJa
             </div>
 
             <div class="parameter-row">
+              <label class="parameter-name" for="animation"><code>animation</code></label>
+              <p class="parameter-description" id="animation-help">{copy.animationDescription}</p>
+              <div class="parameter-control">
+                <select id="animation" name="animation" aria-label={copy.animation} aria-describedby="animation-help" disabled>
+                  <option value="0">{copy.animationNone}</option>
+                  <option value="1">{copy.animationRule34}</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="parameter-row">
               <label class="parameter-name" for="offset"><code>offset</code></label>
               <p class="parameter-description" id="offset-help">{copy.offsetDescription}</p>
               <div class="parameter-control">
@@ -208,8 +228,9 @@ const copy = isJa
     <a href="https://counter.fjtd.dev/">{copy.github}</a>
   </footer>
 
-  <script is:inline define:vars={{ digitImages, endpoint, copyLabels: { copy: copy.copyUrl, copied: copy.copied, selected: copy.selected, chooseTheme: copy.chooseTheme, selectedTheme: copy.selectedTheme } }}>
+  <script is:inline define:vars={{ digitImages, rule34Images, endpoint, copyLabels: { copy: copy.copyUrl, copied: copy.copied, selected: copy.selected, chooseTheme: copy.chooseTheme, selectedTheme: copy.selectedTheme } }}>
     const asset = document.querySelector("#asset");
+    const animation = document.querySelector("#animation");
     const offset = document.querySelector("#offset");
     const offsetError = document.querySelector("#offset-error");
     const padding = document.querySelector("#padding");
@@ -243,9 +264,14 @@ const copy = isJa
       return !invalid;
     }
 
+    function animationEnabled() {
+      return asset.value === "blue2-100" && animation.value === "1";
+    }
+
     function counterUrl() {
       const params = new URLSearchParams();
       if (asset.value !== "normal-150") params.set("asset", asset.value);
+      if (animationEnabled()) params.set("animation", "1");
       const initial = offsetValue();
       if (initial) params.set("offset", String(initial));
       const minimumDigits = paddingValue();
@@ -269,7 +295,9 @@ const copy = isJa
     }
 
     function renderPreview() {
-      const images = digitImages[asset.value];
+      animation.disabled = asset.value !== "blue2-100";
+      if (animation.disabled) animation.value = "0";
+      const images = animationEnabled() ? rule34Images : digitImages[asset.value];
       const previewValue = String(offsetValue() + 1).padStart(paddingValue(), "0");
       digitStrip.replaceChildren(...[...previewValue].map((digit) => makeDigitImage(images[Number(digit)], digit)));
       updateThemeSelection();
@@ -286,7 +314,7 @@ const copy = isJa
       resetResult();
     }));
 
-    [asset, offset, padding].forEach((control) => control.addEventListener("input", () => {
+    [asset, animation, offset, padding].forEach((control) => control.addEventListener("input", () => {
       renderPreview();
       resetResult();
     }));
@@ -324,6 +352,8 @@ const copy = isJa
       selection.removeAllRanges();
       selection.addRange(range);
     });
+
+    renderPreview();
 
     document.querySelector("#settings").addEventListener("submit", (event) => {
       event.preventDefault();

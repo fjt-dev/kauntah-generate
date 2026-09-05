@@ -210,6 +210,8 @@ select, input {
   background: white;
 }
 
+select:disabled { color: var(--muted); background: #f0f1f4; cursor: not-allowed; }
+
 select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 4px rgba(93,123,215,.13); }
 
 input[aria-invalid="true"] {
