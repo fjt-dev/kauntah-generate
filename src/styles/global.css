@@ -302,11 +302,14 @@ input[aria-invalid="true"] {
 
 .button-primary { border-color: var(--ink); color: white; background: var(--ink); box-shadow: 4px 4px 0 rgba(220,85,106,.62); }
 .button-primary:hover { transform: translateY(-1px); box-shadow: 4px 5px 0 rgba(220,85,106,.62); }
-.generate,
-.generate:hover {
-  margin-top: 22px;
+.generate {
+  display: flex;
+  width: fit-content;
+  margin: 22px 0 0 auto;
   box-shadow: none;
 }
+
+.generate:hover { box-shadow: none; }
 
 .code-wrap { position: relative; }
 
