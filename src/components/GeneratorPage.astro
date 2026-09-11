@@ -36,7 +36,7 @@ const copy = isJa
       paramDescription: "説明",
       paramValue: "値",
       theme: "テーマ",
-      themeDescription: "カウンター画像のテーマを選択します。",
+      themeDescription: "選択したカウンター画像のテーマです。",
       animation: "アニメーション",
       animationDescription: "blue2-100にアニメーションを加えられます",
       animationNone: "なし（静止画）",
@@ -79,7 +79,7 @@ const copy = isJa
       paramDescription: "Description",
       paramValue: "Value",
       theme: "Theme",
-      themeDescription: "Select the image theme used by the counter.",
+      themeDescription: "The selected image theme used by your counter.",
       animation: "Animation",
       animationDescription: "Animations can be added to blue2-100.",
       animationNone: "None (static)",
@@ -166,12 +166,11 @@ const copy = isJa
             </div>
 
             <div class="parameter-row">
-              <label class="parameter-name" for="asset"><code>asset</code></label>
+              <span class="parameter-name"><code>asset</code></span>
               <p class="parameter-description">{copy.themeDescription}</p>
               <div class="parameter-control">
-                <select id="asset" name="asset" aria-label={copy.theme}>
-                  {themeNames.map((theme) => <option value={theme}>{theme}</option>)}
-                </select>
+                <input id="asset" name="asset" type="hidden" value={initialTheme} />
+                <output class="read-only-value" data-asset-display aria-label={copy.theme}>{initialTheme}</output>
               </div>
             </div>
 
@@ -230,6 +229,7 @@ const copy = isJa
 
   <script is:inline define:vars={{ digitImages, rule34Images, endpoint, copyLabels: { copy: copy.copyUrl, copied: copy.copied, selected: copy.selected, chooseTheme: copy.chooseTheme, selectedTheme: copy.selectedTheme } }}>
     const asset = document.querySelector("#asset");
+    const assetDisplay = document.querySelector("[data-asset-display]");
     const animation = document.querySelector("#animation");
     const offset = document.querySelector("#offset");
     const offsetError = document.querySelector("#offset-error");
@@ -287,6 +287,7 @@ const copy = isJa
     }
 
     function updateThemeSelection() {
+      assetDisplay.textContent = asset.value;
       themeButtons.forEach((button) => {
         const selected = button.dataset.theme === asset.value;
         button.setAttribute("aria-pressed", String(selected));
@@ -314,7 +315,7 @@ const copy = isJa
       resetResult();
     }));
 
-    [asset, animation, offset, padding].forEach((control) => control.addEventListener("input", () => {
+    [animation, offset, padding].forEach((control) => control.addEventListener("input", () => {
       renderPreview();
       resetResult();
     }));
