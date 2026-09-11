@@ -215,16 +215,7 @@ select:disabled { color: var(--muted); background: #f0f1f4; cursor: not-allowed;
 select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 4px rgba(93,123,215,.13); }
 
 .read-only-value {
-  display: flex;
-  width: 100%;
-  min-height: 42px;
-  align-items: center;
-  padding-inline: 12px;
-  border: 1px solid #d5d7de;
-  border-radius: 10px;
   color: var(--ink);
-  background: #f7f8fa;
-  font-weight: 700;
 }
 
 input[aria-invalid="true"] {
