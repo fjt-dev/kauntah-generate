@@ -214,6 +214,10 @@ select:disabled { color: var(--muted); background: #f0f1f4; cursor: not-allowed;
 
 select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 4px rgba(93,123,215,.13); }
 
+.read-only-value {
+  color: var(--ink);
+}
+
 input[aria-invalid="true"] {
   border-color: var(--accent);
   box-shadow: 0 0 0 4px rgba(220,85,106,.12);
