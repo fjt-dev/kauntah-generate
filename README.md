@@ -13,17 +13,19 @@ npm run build
 The English page is served at `/` and the Japanese page at `/ja/`.
 Static counter artwork is embedded in the generated pages. Animated GIFs are served locally from `public/images/rule34/`. Previews do not request the live counter endpoint or increase its count.
 
-## Animation
+## Designs
 
-For `blue2-100`, select **On (rule34)** / **あり（rule34）** to preview the animation
-and generate a URL with `asset=blue2-100&animation=1`.
-Static mode omits `animation`, matching the counter API default. The control is
-disabled for other themes. Switching away from `blue2-100` resets it to static
-mode, and changing any setting hides the previously generated URL.
-Animation works with both `offset` and `padding`.
+Select `rule34` from the design list to preview its animated GIF artwork and
+generate a URL with `asset=rule34`. It is an independent design;
+`blue2-100` always uses its original static artwork. The generator no longer
+shows an animation control or includes the `animation` parameter in generated URLs.
 
-The counter service must deploy support for `animation=1` before generated
-animation URLs will animate. The local preview works independently of that deployment.
+All designs support `offset` and `padding`. Switching designs preserves these
+values and hides the previously generated URL until it is generated again.
+
+Existing `asset=blue2-100&animation=1` URLs should be changed to `asset=rule34`.
+The counter service must deploy support for `asset=rule34` before those URLs
+render the new design. Local previews work independently of that deployment.
 
 ## Artwork credits
 
