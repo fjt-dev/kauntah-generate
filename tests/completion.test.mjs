@@ -61,3 +61,27 @@ test("unknown input remains literal and empty input offers the command list", ()
   assert.ok(completeCommand("").candidates.includes("help"));
   assert.ok(completeCommand("").candidates.includes("history"));
 });
+
+test("options after the caret are excluded without excluding the current token", () => {
+  for (const suffix of ["--padding 6", "--padding=6"]) {
+    const input = `kauntah --pa ${suffix}`;
+    const result = completeCommand(input, "kauntah --pa".length);
+    assert.deepEqual(result.candidates, []);
+    assert.equal(result.value, input);
+  }
+  const input = "kauntah  --asset=rule34 --format html";
+  const result = completeCommand(input, "kauntah ".length);
+  assert.ok(!result.candidates.includes("--asset"));
+  assert.ok(!result.candidates.includes("--format"));
+  assert.ok(result.candidates.includes("--padding"));
+  const current = "kauntah --padding=au --format html";
+  assert.equal(
+    completeCommand(current, "kauntah --padding=au".length).value,
+    "kauntah --padding=auto --format html",
+  );
+  const middle = "kauntah --padding=auto --format html";
+  assert.equal(
+    completeCommand(middle, "kauntah --padding=au".length).value,
+    middle,
+  );
+});

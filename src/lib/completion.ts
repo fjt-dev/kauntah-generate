@@ -50,7 +50,7 @@ export function insertCompletion(
 
 /** Complete only known Kauntah commands and values; never inspect the filesystem. */
 export function completeCommand(input: string, cursor = input.length) {
-  const { start, prefix } = wordAt(input, cursor);
+  const { start, end, prefix } = wordAt(input, cursor);
   const before = input.slice(0, start).trim().split(/\s+/).filter(Boolean);
   let pool: string[] = [];
   if (!before.length) pool = commandNames;
@@ -68,6 +68,11 @@ export function completeCommand(input: string, cursor = input.length) {
       if (!match) continue;
       used.add(`--${match[1]}`);
       if (match[1] !== "help" && match[2] === undefined) expected = match[1];
+    }
+    // Include later flags, but exclude the entire token being edited.
+    for (const token of input.slice(end).trim().split(/\s+/).filter(Boolean)) {
+      const option = token.split("=", 1)[0];
+      if (options.includes(option)) used.add(option);
     }
     const equal = /^--(asset|format|padding)=(.*)$/.exec(prefix);
     if (expected) pool = values[expected] ?? [];
