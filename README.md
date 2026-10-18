@@ -78,3 +78,54 @@ Text accents and input borders use contrast-adjusted colors. Mobile source
 order matches visual order; keyboard focus is kept below the sticky preview.
 GIF animation behavior remains unchanged. These improvements do not constitute
 a full WCAG conformance audit or assistive-technology certification.
+
+## Command mode (Beta)
+
+Expand **Command mode (Beta)** under Settings. Commands update the
+normal controls, local preview, and embed code together. Nothing is executed
+in a system shell and no counter requests are made by these commands.
+
+```text
+kauntah --asset rule34 --offset 42 --padding 6 --format html
+theme blue2-100
+offset 1000
+padding auto
+format url
+help
+themes
+show
+copy
+reset
+clear
+```
+
+Flags accept either `--padding 6` or `--padding=6`. Unspecified settings are
+preserved. Invalid commands leave all settings untouched. `show` prints a
+reusable command and the current embed output; `copy` copies the selected
+format. `reset` restores defaults; `clear` clears displayed output. Use the
+Up/Down keys to recall commands. Tab completes command names, options, designs,
+formats, and padding values. A unique match is inserted; ambiguous matches
+expand to their common prefix and appear as selectable candidates. An unchanged
+second Tab moves focus to the next control. Shift+Tab always moves backward.
+The Complete button provides the same completion on touch devices. Escape closes
+the candidate list. Completion respects the caret position and preserves later
+flags, and never proposes already-used options.
+
+The terminal uses a Linux-style `guest@kauntah:~$` prompt with the input on the
+same line. Ctrl+A/E move to the start/end, Ctrl+U/K delete before/after the
+caret, Ctrl+L clears output without losing input, and Ctrl+C cancels an
+unselected line. Selected text retains normal clipboard copying. `history`
+prints numbered commands. These are browser UI bindings, not an operating-system
+shell.
+Command history is in memory only and is cleared on page reload.
+
+## Third-party terminal artwork
+
+The page-wide steam locomotive uses D51 ASCII artwork and the six wheel phases
+from [SL by Toyoda Masashi](https://github.com/mtoyoda/sl), commit
+`923e7d7ebc5c1f009755bdeb789ac25658ccce03`. The browser animation adapts
+the original right-to-left character-step motion and adds bounded DOM cleanup,
+one active effect at a time, Escape dismissal, and a brief stationary display
+when reduced motion is requested. The overlay does not intercept pointer events
+or change counter settings. The full upstream license is retained in
+`public/licenses/sl.txt`; the artwork source also retains attribution.
