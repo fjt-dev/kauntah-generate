@@ -1,338 +1,242 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { digitImages, type ThemeName } from "../data/digitImages";
+import ExternalLinkIcon from "./ExternalLinkIcon.astro";
+import { digitImages } from "../data/digitImages";
+import { themes, embedCode, type Theme } from "../lib/generator";
 
-interface Props {
-  locale: "en" | "ja";
-}
-
+interface Props { locale: "en" | "ja"; }
 const { locale } = Astro.props;
 const isJa = locale === "ja";
-const themeNames: ThemeName[] = ["normal-150", "blue2-150", "green-100", "blue2-100", "rule34"];
-const initialTheme: ThemeName = "normal-150";
-const endpoint = "https://counter.fjtd.dev/counter";
-
-const copy = isJa
-  ? {
-      title: "Kauntah ジェネレーター",
-      description: "貼るだけで使えるレトロなアクセスカウンターを作成します。",
-      home: "Kauntahジェネレーター ホーム",
-      brand: "Kauntah Generator",
-      nav: "メインナビゲーション",
-      language: "言語",
-      github: "GitHub ↗",
-      eyebrow: "ACCESS COUNTER GENERATOR",
-      pageTitle: "Kauntahを作る。",
-      introduction: "デザインを選び、必要な値だけを設定してURLを生成します。アカウントもカウンターIDも必要ありません。",
-      designsTitle: "デザイン一覧",
-      designsDescription: "使用するカウンターのテーマを選択します。",
-      chooseTheme: "このデザインを選択",
-      selectedTheme: "選択中",
-      generatorTitle: "ジェネレーター",
-      generatorDescription: "プレビューを確認し、カウンター用URLを生成します。",
-      customize: "カウンターを設定",
-      param: "パラメータ",
-      paramDescription: "説明",
-      paramValue: "値",
-      theme: "テーマ",
-      themeDescription: "選択したカウンター画像のテーマです。",
-      offset: "初期加算値",
-      offsetDescription: "カウントに加算する初期値です。0〜1,000,000。",
-      offsetError: "0〜1,000,000の整数を入力してください。",
-      padding: "最小表示桁数",
-      paddingDescription: "左側を0で埋める最小桁数です。任意で1〜16。",
-      paddingError: "1〜16の整数を入力してください。",
-      preview: "生成されるカウンターのプレビュー",
-      generate: "URLを生成",
-      generatedUrl: "生成URL",
-      copyUrl: "URLをコピー",
-      copied: "コピーしました",
-      selected: "選択しました",
-      noIdTitle: "カウンターIDは不要です。",
-      noIdBody: "Kauntahが設置先のドメインを識別し、サイトごとに独立したカウントを保存します。",
-      footer: "Kauntah — 貼るだけのアクセスカウンター。",
-    }
-  : {
-      title: "Kauntah Generator",
-      description: "Create a delightfully simple retro access counter for your website.",
-      home: "Kauntah Generator home",
-      brand: "Kauntah Generator",
-      nav: "Main navigation",
-      language: "Language",
-      github: "GitHub ↗",
-      eyebrow: "ACCESS COUNTER GENERATOR",
-      pageTitle: "Make your Kauntah.",
-      introduction: "Choose a design, set only the values you need, and generate a counter URL. No account or counter ID is required.",
-      designsTitle: "Designs",
-      designsDescription: "Choose the image theme used by your counter.",
-      chooseTheme: "Choose this design",
-      selectedTheme: "Selected",
-      generatorTitle: "Generator",
-      generatorDescription: "Check the preview and generate the URL for your counter.",
-      customize: "Customize your counter",
-      param: "Param",
-      paramDescription: "Description",
-      paramValue: "Value",
-      theme: "Theme",
-      themeDescription: "The selected image theme used by your counter.",
-      offset: "Starting offset",
-      offsetDescription: "Add a starting value to the counter, from 0 to 1,000,000.",
-      offsetError: "Enter a whole number from 0 to 1,000,000.",
-      padding: "Minimum display digits",
-      paddingDescription: "Pad the display with leading zeros. Optional, from 1 to 16.",
-      paddingError: "Enter a whole number from 1 to 16.",
-      preview: "Preview of the generated counter",
-      generate: "Generate URL",
-      generatedUrl: "Generated URL",
-      copyUrl: "Copy URL",
-      copied: "Copied!",
-      selected: "Selected",
-      noIdTitle: "No counter ID required.",
-      noIdBody: "Kauntah identifies the host website and keeps a separate count for every domain.",
-      footer: "Kauntah — a delightfully simple access counter.",
-    };
+const initial = { asset: "normal-150" as Theme, offset: 0, padding: 0 };
+const copy = isJa ? {
+  skip: "本文へ移動", newWindow: "新しいタブで開きます", title: "Kauntah ジェネレーター", home: "Kauntah ジェネレーター ホーム", language: "言語", nav: "ナビゲーション",
+  description: "Kauntahのデザインと表示を設定し、サイトに設置するHTMLをコピーできます。",
+  settings: "設定", theme: "デザイン", offset: "カウントへの加算値", padding: "最小表示桁数", auto: "指定なし",
+  offsetHelp: "実際のカウントに加算して表示します。保存済みのカウントは変わりません。",
+  paddingHelp: "指定した桁数まで左側を0で埋めます。空欄の場合はゼロ埋めしません。",
+  offsetError: "0〜1,000,000の整数を入力してください。", paddingError: "1〜16の整数を入力するか、空欄にしてください。",
+  preview: "プレビュー", previewHelp: "未計測（0件）に加算値を反映した表示です。プレビューではカウントされません。", previewInvalid: "入力内容を確認してください。",
+  embed: "設置コード", html: "HTML", url: "画像URL", copy: "コピー", copied: "コピーしました", selected: "コードを選択しました。手動でコピーしてください。",
+  htmlHelp: "設置先ページのHTMLに貼り付けてください。", urlHelp: "画像URLを直接開いてもカウントされません。設置時はRefererの送信が必要です。",
+  invalid: "入力エラーを修正すると、設置コードが表示されます。",
+  usage: "仕様・設置方法", referer: "カウントは設置先のホスト名ごとに保存されます。サブドメインが違う場合は別のカウンターです。IDの設定は不要です。",
+  policy: "HTMLの referrerpolicy=\"origin\" は削除しないでください。Refererが送信されない環境ではカウントされません。画像プロキシやMarkdownの表示環境によっては利用できません。",
+  limit: "同じホスト・同じIPからの加算は60秒間に最大20回です。画像の読み込み回数を数えるため、ユニーク訪問者数ではありません。",
+  docs: "仕様を読む", credits: "素材・利用条件", alt: "アクセスカウンター", noScript: "設定の変更にはJavaScriptを有効にしてください。初期設定のHTMLはそのままコピーして利用できます。",
+} : {
+  skip: "Skip to content", newWindow: "Opens in a new tab", title: "Kauntah Generator", home: "Kauntah Generator home", language: "Language", nav: "Navigation",
+  description: "Configure a Kauntah counter and copy the HTML for your website.",
+  settings: "Settings", theme: "Design", offset: "Count offset", padding: "Minimum digits", auto: "None",
+  offsetHelp: "Added to the displayed count. This does not change the stored count.",
+  paddingHelp: "Pad with leading zeros to this number of digits. Leave blank for no padding.",
+  offsetError: "Enter a whole number from 0 to 1,000,000.", paddingError: "Enter a whole number from 1 to 16, or leave blank.",
+  preview: "Preview", previewHelp: "Zero recorded hits plus your offset. This preview never increases the count.", previewInvalid: "Check the values in Settings.",
+  embed: "Embed code", html: "HTML", url: "Image URL", copy: "Copy", copied: "Copied", selected: "Code selected. Please copy it manually.",
+  htmlHelp: "Paste this into your website’s HTML.", urlHelp: "Opening the image URL directly does not count a hit. An embedding page must send a Referer.",
+  invalid: "Fix the input errors to see your embed code.",
+  usage: "Usage & specifications", referer: "Counts are stored per hostname. Subdomains have separate counters. No counter ID is needed.",
+  policy: "Keep referrerpolicy=\"origin\" in the HTML. Without a Referer, hits are not counted. Image proxies and some Markdown environments may not work.",
+  limit: "A host and IP combination can increment up to 20 times per 60 seconds. This counts image requests, not unique visitors.",
+  docs: "Documentation", credits: "Artwork & usage terms", alt: "Visitor counter", noScript: "Enable JavaScript to change settings. You can still copy and use the default HTML below.",
+};
+const themeNames = Object.keys(themes) as Theme[];
 ---
-
 <BaseLayout lang={locale} title={copy.title} description={copy.description}>
-  <header class="shell site-header">
-    <a class="brand" href="#top" aria-label={copy.home}>{copy.brand}</a>
-    <nav class="site-nav" aria-label={copy.nav}>
-      <a href="https://counter.fjtd.dev/">{copy.github}</a>
-      <span class="language-switch" aria-label={copy.language}>
+  <a class="skip-link" href="#main-content">{copy.skip}</a>
+  <header class="site-header"><div class="shell header-inner">
+    <a class="brand" href={isJa ? "/ja/" : "/"} aria-label={copy.home}>Kauntah</a>
+    <nav aria-label={copy.nav}>
+      <a href="https://github.com/fjt-dev/Kauntah" target="_blank" rel="noreferrer" class="external-link">GitHub<ExternalLinkIcon /><span class="sr-only"> ({copy.newWindow})</span></a>
+      <div class="language-switch" role="group" aria-label={copy.language}>
         <a href="/" lang="en" aria-current={!isJa ? "page" : undefined}>EN</a>
         <a href="/ja/" lang="ja" aria-current={isJa ? "page" : undefined}>日本語</a>
-      </span>
+      </div>
     </nav>
-  </header>
-
-  <main class="shell page" id="top">
-    <section class="intro" aria-labelledby="page-title">
-      <p class="eyebrow">{copy.eyebrow}</p>
-      <h1 id="page-title">{copy.pageTitle}</h1>
-      <p>{copy.introduction}</p>
-    </section>
-
-    <section class="page-section" aria-labelledby="designs-title">
-      <div class="section-heading">
-        <h2 id="designs-title">{copy.designsTitle}</h2>
-        <p>{copy.designsDescription}</p>
-      </div>
-
-      <div class="design-list">
-        {themeNames.map((theme) => (
-          <button class="design-card" type="button" data-theme={theme} aria-label={`${copy.chooseTheme}: ${theme}`} aria-pressed={theme === initialTheme ? "true" : "false"}>
-            <span class="design-card-heading">
-              <strong>{theme}</strong>
-              <span data-theme-status>{theme === initialTheme ? copy.selectedTheme : copy.chooseTheme}</span>
-            </span>
-            <span class="design-strip" aria-hidden="true">
-              {digitImages[theme].map((src) => <img src={src} alt="" loading="lazy" />)}
-            </span>
-          </button>
-        ))}
-      </div>
-    </section>
-
-    <section class="page-section" id="generator" aria-labelledby="generator-title">
-      <div class="section-heading">
-        <h2 id="generator-title">{copy.generatorTitle}</h2>
-        <p>{copy.generatorDescription}</p>
-      </div>
-
-      <div class="generator">
-        <form class="settings" id="settings">
-          <h3 class="panel-title"><span class="step">1</span>{copy.customize}</h3>
-
-          <div class="mini-preview" aria-live="polite">
-            <div class="counter-strip" data-digit-strip aria-label={copy.preview}>
-              <img src={digitImages[initialTheme][0]} alt="0" />
+  </div></header>
+  <main class="shell page" id="main-content" tabindex="-1">
+    <h1>{copy.title}</h1>
+    <noscript><p class="notice">{copy.noScript}</p></noscript>
+    <div class="workspace">
+        <section class="preview-section" aria-labelledby="preview-title">
+          <div class="section-heading"><h2 id="preview-title">{copy.preview}</h2><span id="image-size">68 × 150 px</span></div>
+          <div class="preview-stage" id="preview-stage">
+            <div class="counter-strip" data-digit-strip role="img" aria-label={`${copy.preview}: 0`} style="--digit-count: 1; --digit-width: 68px;">
+              <img src={digitImages[initial.asset][0]} alt="" width="68" height="150" />
             </div>
           </div>
-
-          <div class="parameter-table">
-            <div class="parameter-head" aria-hidden="true">
-              <span>{copy.param}</span>
-              <span>{copy.paramDescription}</span>
-              <span>{copy.paramValue}</span>
-            </div>
-
-            <div class="parameter-row">
-              <span class="parameter-name"><code>asset</code></span>
-              <p class="parameter-description">{copy.themeDescription}</p>
-              <div class="parameter-control">
-                <input id="asset" name="asset" type="hidden" value={initialTheme} />
-                <output class="read-only-value" data-asset-display aria-label={copy.theme}>{initialTheme}</output>
-              </div>
-            </div>
-
-            <div class="parameter-row">
-              <label class="parameter-name" for="offset"><code>offset</code></label>
-              <p class="parameter-description" id="offset-help">{copy.offsetDescription}</p>
-              <div class="parameter-control">
-                <input id="offset" name="offset" type="number" min="0" max="1000000" step="1" value="0" inputmode="numeric" aria-label={copy.offset} aria-describedby="offset-help offset-error" />
-                <span class="field-error" id="offset-error" role="alert" hidden>{copy.offsetError}</span>
-              </div>
-            </div>
-
-            <div class="parameter-row">
-              <label class="parameter-name" for="padding"><code>padding</code></label>
-              <p class="parameter-description" id="padding-help">{copy.paddingDescription}</p>
-              <div class="parameter-control">
-                <input id="padding" name="padding" type="number" min="1" max="16" step="1" inputmode="numeric" aria-label={copy.padding} aria-describedby="padding-help padding-error" />
-                <span class="field-error" id="padding-error" role="alert" hidden>{copy.paddingError}</span>
-              </div>
-            </div>
+          <p class="field-help" id="preview-help">{copy.previewHelp}</p>
+        </section>
+      <form id="settings" class="settings" aria-labelledby="settings-title" novalidate>
+        <h2 id="settings-title">{copy.settings}</h2>
+        <fieldset class="theme-picker">
+          <legend>{copy.theme}</legend>
+          <div class="theme-list">
+            {themeNames.map(theme => <label class="theme-option">
+              <input type="radio" name="asset" value={theme} checked={theme === initial.asset} />
+              <span class="theme-name">{theme}</span>
+              <span class="theme-sample" aria-hidden="true">{[0, 1, 2].map(digit => <img src={digitImages[theme][digit]} alt="" width={themes[theme].width} height={themes[theme].height} />)}</span>
+            </label>)}
           </div>
-
-          <button class="button button-primary generate" type="submit">{copy.generate}</button>
-        </form>
-
-        <div class="output">
-          <h3 class="panel-title"><span class="step">2</span>{copy.generatedUrl}</h3>
-          <div class="code-wrap" id="result" hidden>
-            <pre id="code" tabindex="0"></pre>
-            <button class="copy" id="copy" type="button">{copy.copyUrl}</button>
-          </div>
-          <div class="notice">
-            <span aria-hidden="true">✦</span>
-            <div><strong>{copy.noIdTitle}</strong><br />{copy.noIdBody}</div>
-          </div>
+        </fieldset>
+        <div class="field">
+          <div class="field-heading"><label for="offset">{copy.offset}</label><span>0–1,000,000</span></div>
+          <input id="offset" name="offset" type="number" min="0" max="1000000" step="1" value="0" inputmode="numeric" aria-describedby="offset-help" />
+          <p id="offset-help" class="field-help">{copy.offsetHelp}</p>
+          <p class="field-error" id="offset-error" hidden>{copy.offsetError}</p>
         </div>
-      </div>
-    </section>
+        <div class="field">
+          <div class="field-heading"><label for="padding">{copy.padding}</label><span>1–16</span></div>
+          <input id="padding" name="padding" type="number" min="1" max="16" step="1" inputmode="numeric" placeholder={copy.auto} aria-describedby="padding-help" />
+          <p id="padding-help" class="field-help">{copy.paddingHelp}</p>
+          <p class="field-error" id="padding-error" hidden>{copy.paddingError}</p>
+        </div>
+      </form>
+        <section class="embed-section" aria-labelledby="embed-title">
+          <div class="section-heading"><h2 id="embed-title">{copy.embed}</h2><button class="copy-button" id="copy" type="button">{copy.copy}</button></div>
+          <div class="format-switch" role="tablist" aria-label={copy.embed}>
+            <button type="button" id="format-html" role="tab" data-format="html" aria-selected="true" aria-controls="code-panel" tabindex="0">{copy.html}</button>
+            <button type="button" id="format-url" role="tab" data-format="url" aria-selected="false" aria-controls="code-panel" tabindex="-1">{copy.url}</button>
+          </div>
+          <div id="code-panel" role="tabpanel" aria-labelledby="format-html" tabindex="0">
+            <pre id="code">{embedCode(initial, "html", copy.alt)}</pre>
+            <p id="invalid-code" class="field-error" hidden>{copy.invalid}</p>
+            <p class="field-help" id="format-help">{copy.htmlHelp}</p>
+          </div>
+          <p id="copy-status" role="status" class="status"></p>
+        </section>
+        <details class="usage">
+          <summary>{copy.usage}</summary>
+          <ul><li>{copy.referer}</li><li>{copy.policy}</li><li>{copy.limit}</li></ul>
+          <a href={`https://github.com/fjt-dev/Kauntah/blob/main/${isJa ? "README.ja.md" : "README.md"}`} target="_blank" rel="noreferrer" class="external-link">{copy.docs}<ExternalLinkIcon /><span class="sr-only"> ({copy.newWindow})</span></a>
+        </details>
+    </div>
+    <p id="validation-status" class="sr-only" role="status" aria-atomic="true"></p>
   </main>
+  <footer class="shell site-footer"><span>Kauntah</span><a href="https://github.com/fjt-dev/Kauntah#credits" target="_blank" rel="noreferrer" class="external-link">{copy.credits}<ExternalLinkIcon /><span class="sr-only"> ({copy.newWindow})</span></a></footer>
+  <script id="generator-labels" type="application/json" is:inline set:html={JSON.stringify(copy).replaceAll("<", "\\u003c")} />
+  <script>
+    import { digitImages } from "../data/digitImages";
+    import { themes, validateSettings, previewDigits, embedCode, type Format } from "../lib/generator";
 
-  <footer class="shell site-footer">
-    <span>{copy.footer}</span>
-    <a href="https://counter.fjtd.dev/">{copy.github}</a>
-  </footer>
+    const labels = JSON.parse(document.querySelector("#generator-labels")!.textContent!);
+    const form = document.querySelector<HTMLFormElement>("#settings")!;
+    const offset = document.querySelector<HTMLInputElement>("#offset")!;
+    const padding = document.querySelector<HTMLInputElement>("#padding")!;
+    const code = document.querySelector<HTMLElement>("#code")!;
+    const strip = document.querySelector<HTMLElement>("[data-digit-strip]")!;
+    const copyButton = document.querySelector<HTMLButtonElement>("#copy")!;
+    const status = document.querySelector<HTMLElement>("#copy-status")!;
+    const validationStatus = document.querySelector<HTMLElement>("#validation-status")!;
+    const panel = document.querySelector<HTMLElement>("#code-panel")!;
+    const formatButtons = [...document.querySelectorAll<HTMLButtonElement>("[data-format]")];
+    let format: Format = "html";
+    let revision = 0;
+    let timer: ReturnType<typeof setTimeout>;
 
-  <script is:inline define:vars={{ digitImages, endpoint, copyLabels: { copy: copy.copyUrl, copied: copy.copied, selected: copy.selected, chooseTheme: copy.chooseTheme, selectedTheme: copy.selectedTheme } }}>
-    const asset = document.querySelector("#asset");
-    const assetDisplay = document.querySelector("[data-asset-display]");
-    const offset = document.querySelector("#offset");
-    const offsetError = document.querySelector("#offset-error");
-    const padding = document.querySelector("#padding");
-    const paddingError = document.querySelector("#padding-error");
-    const code = document.querySelector("#code");
-    const result = document.querySelector("#result");
-    const copyButton = document.querySelector("#copy");
-    const digitStrip = document.querySelector("[data-digit-strip]");
-    const themeButtons = [...document.querySelectorAll("[data-theme]")];
-
-    function offsetValue() {
-      return Math.max(0, Math.min(1000000, Number(offset.value) || 0));
-    }
-
-    function updateOffsetError() {
-      const invalid = offset.value !== "" && !offset.checkValidity();
-      offsetError.hidden = !invalid;
-      offset.setAttribute("aria-invalid", String(invalid));
-      return !invalid;
-    }
-
-    function paddingValue() {
-      const value = Number(padding.value);
-      return Number.isInteger(value) && value >= 1 && value <= 16 ? value : 0;
-    }
-
-    function updatePaddingError() {
-      const invalid = padding.value !== "" && !padding.checkValidity();
-      paddingError.hidden = !invalid;
-      padding.setAttribute("aria-invalid", String(invalid));
-      return !invalid;
-    }
-
-    function counterUrl() {
-      const params = new URLSearchParams();
-      if (asset.value !== "normal-150") params.set("asset", asset.value);
-      const initial = offsetValue();
-      if (initial) params.set("offset", String(initial));
-      const minimumDigits = paddingValue();
-      if (minimumDigits) params.set("padding", String(minimumDigits));
-      return endpoint + (params.size ? `?${params.toString()}` : "");
-    }
-
-    function makeDigitImage(src, digit) {
-      const image = document.createElement("img");
-      image.src = src;
-      image.alt = String(digit);
-      return image;
-    }
-
-    function updateThemeSelection() {
-      assetDisplay.textContent = asset.value;
-      themeButtons.forEach((button) => {
-        const selected = button.dataset.theme === asset.value;
-        button.setAttribute("aria-pressed", String(selected));
-        button.querySelector("[data-theme-status]").textContent = selected ? copyLabels.selectedTheme : copyLabels.chooseTheme;
+    function render() {
+      revision++;
+      clearTimeout(timer);
+      copyButton.textContent = labels.copy;
+      status.textContent = "";
+      const asset = form.querySelector<HTMLInputElement>('[name="asset"]:checked')!.value;
+      const result = validateSettings(asset, offset.value, padding.value);
+      const errors = { offset: result.errors.offset || offset.validity.badInput, padding: result.errors.padding || padding.validity.badInput };
+      [offset, padding].forEach(control => {
+        const invalid = errors[control.id as "offset" | "padding"];
+        control.setAttribute("aria-invalid", String(invalid));
+        control.setAttribute("aria-describedby", `${control.id}-help${invalid ? ` ${control.id}-error` : ""}`);
+        document.querySelector<HTMLElement>(`#${control.id}-error`)!.hidden = !invalid;
       });
+      const errorText = [errors.offset ? labels.offsetError : "", errors.padding ? labels.paddingError : ""].filter(Boolean).join(" ");
+      if (validationStatus.textContent !== errorText) validationStatus.textContent = errorText;
+      const valid = result.valid && !errors.offset && !errors.padding;
+      copyButton.disabled = !valid;
+      code.hidden = !valid;
+      document.querySelector<HTMLElement>("#invalid-code")!.hidden = valid;
+      document.querySelector<HTMLElement>("#preview-stage")!.hidden = !valid;
+      document.querySelector<HTMLElement>("#preview-help")!.textContent = valid ? labels.previewHelp : labels.previewInvalid;
+      document.querySelector<HTMLElement>("#format-help")!.textContent = valid ? labels[format + "Help"] : "";
+      const size = document.querySelector<HTMLElement>("#image-size")!;
+      size.hidden = !valid;
+      formatButtons.forEach(button => {
+        const selected = button.dataset.format === format;
+        button.setAttribute("aria-selected", String(selected));
+        button.tabIndex = selected ? 0 : -1;
+      });
+      panel.setAttribute("aria-labelledby", `format-${format}`);
+      if (!result.valid || !valid) { code.textContent = ""; return; }
+      const settings = result.settings;
+      const digits = previewDigits(settings);
+      const dimensions = themes[settings.asset];
+      strip.style.setProperty("--digit-count", String(digits.length));
+      strip.style.setProperty("--digit-width", `${dimensions.width}px`);
+      strip.setAttribute("aria-label", `${labels.preview}: ${digits}`);
+      strip.replaceChildren(...[...digits].map(digit => {
+        const image = document.createElement("img");
+        image.src = digitImages[settings.asset][Number(digit)];
+        image.alt = "";
+        image.width = dimensions.width;
+        image.height = dimensions.height;
+        return image;
+      }));
+      size.textContent = `${dimensions.width * digits.length} × ${dimensions.height} px`;
+      code.textContent = embedCode(settings, format, labels.alt);
     }
-
-    function renderPreview() {
-      const images = digitImages[asset.value];
-      const previewValue = String(offsetValue()).padStart(paddingValue(), "0");
-      digitStrip.replaceChildren(...[...previewValue].map((digit) => makeDigitImage(images[Number(digit)], digit)));
-      updateThemeSelection();
-    }
-
-    function resetResult() {
-      result.hidden = true;
-      copyButton.textContent = copyLabels.copy;
-    }
-
-    themeButtons.forEach((button) => button.addEventListener("click", () => {
-      asset.value = button.dataset.theme;
-      renderPreview();
-      resetResult();
-    }));
-
-    [offset, padding].forEach((control) => control.addEventListener("input", () => {
-      renderPreview();
-      resetResult();
-    }));
-
-    padding.addEventListener("input", updatePaddingError);
-    padding.addEventListener("invalid", (event) => {
+    form.addEventListener("input", render);
+    form.addEventListener("change", render);
+    form.addEventListener("submit", event => event.preventDefault());
+    formatButtons.forEach(button => button.addEventListener("click", () => { format = button.dataset.format as Format; render(); }));
+    formatButtons.forEach((button, index) => button.addEventListener("keydown", event => {
+      let next: number;
+      if (event.key === "ArrowRight") next = (index + 1) % formatButtons.length;
+      else if (event.key === "ArrowLeft") next = (index - 1 + formatButtons.length) % formatButtons.length;
+      else if (event.key === "Home") next = 0;
+      else if (event.key === "End") next = formatButtons.length - 1;
+      else return;
       event.preventDefault();
-      updatePaddingError();
+      formatButtons[next].focus();
+      formatButtons[next].click();
+    }));
+    const previewSection = document.querySelector<HTMLElement>(".preview-section")!;
+    new ResizeObserver(() => {
+      document.documentElement.style.setProperty("--preview-height", `${previewSection.getBoundingClientRect().height}px`);
+    }).observe(previewSection);
+    // Keep keyboard focus outside the mobile sticky preview's occupied space.
+    document.addEventListener("focusin", event => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement) || previewSection.contains(target)) return;
+      requestAnimationFrame(() => {
+        if (getComputedStyle(previewSection).position !== "sticky") return;
+        const previewRect = previewSection.getBoundingClientRect();
+        const targetRect = target.getBoundingClientRect();
+        if (targetRect.top < previewRect.bottom && targetRect.bottom > previewRect.top) {
+          window.scrollBy({ top: targetRect.top - previewRect.bottom - 16, behavior: "instant" });
+        }
+      });
     });
-    offset.addEventListener("input", updateOffsetError);
-    offset.addEventListener("invalid", (event) => {
-      event.preventDefault();
-      updateOffsetError();
-    });
-
-    copyButton.addEventListener("click", async () => {
-      try {
-        await navigator.clipboard.writeText(code.textContent);
-        copyButton.textContent = copyLabels.copied;
-        setTimeout(() => { copyButton.textContent = copyLabels.copy; }, 1300);
-      } catch {
-        const selection = window.getSelection();
-        const range = document.createRange();
-        range.selectNodeContents(code);
-        selection.removeAllRanges();
-        selection.addRange(range);
-        copyButton.textContent = copyLabels.selected;
-      }
-    });
-
-    code.addEventListener("click", () => {
+    function selectCode() {
+      const selection = window.getSelection();
       const range = document.createRange();
       range.selectNodeContents(code);
-      const selection = window.getSelection();
-      selection.removeAllRanges();
-      selection.addRange(range);
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+    }
+    code.addEventListener("click", selectCode);
+    copyButton.addEventListener("click", async () => {
+      const currentRevision = revision;
+      const value = code.textContent!;
+      try {
+        await navigator.clipboard.writeText(value);
+        if (currentRevision !== revision) return;
+        copyButton.textContent = labels.copied;
+        status.textContent = labels.copied;
+        timer = setTimeout(() => { copyButton.textContent = labels.copy; status.textContent = ""; }, 2000);
+      } catch {
+        if (currentRevision !== revision) return;
+        selectCode();
+        status.textContent = labels.selected;
+      }
     });
-
-    renderPreview();
-
-    document.querySelector("#settings").addEventListener("submit", (event) => {
-      event.preventDefault();
-      if (!updateOffsetError() || !updatePaddingError()) return;
-      code.textContent = counterUrl();
-      result.hidden = false;
-    });
+    render();
   </script>
 </BaseLayout>
