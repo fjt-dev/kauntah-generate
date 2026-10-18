@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { readFileSync } from "node:fs";
+import { runInNewContext } from "node:vm";
 import { completeCommand, insertCompletion } from "../src/lib/completion.ts";
 
 test("a unique command or option completes with a trailing space", () => {
@@ -84,4 +86,29 @@ test("options after the caret are excluded without excluding the current token",
     completeCommand(middle, "kauntah --padding=au".length).value,
     middle,
   );
+});
+
+test("a second unchanged single-match completion releases Tab before a suffix", () => {
+  const source = readFileSync(new URL("../src/components/GeneratorPage.astro", import.meta.url), "utf8");
+  const handler = source.slice(
+    source.indexOf("function requestCompletion(): boolean {"),
+    source.indexOf('    completionButton.addEventListener("click"'),
+  ).replace("(): boolean", "()");
+  const input = { value: "kauntah --as --padding 6", selectionStart: "kauntah --as".length };
+  const context = {
+    completeCommand,
+    commandInput: input,
+    completionPanel: { hidden: true },
+    completionStatus: { textContent: "" },
+    lastCompletion: "",
+    dismissCompletions() { context.lastCompletion = ""; },
+    setCommandLine(value, cursor) { input.value = value; input.selectionStart = cursor; },
+  };
+  runInNewContext(handler, context);
+  assert.equal(context.requestCompletion(), true);
+  assert.equal(input.value, "kauntah --asset --padding 6");
+  assert.equal(input.selectionStart, "kauntah --asset".length);
+  assert.equal(context.completionPanel.hidden, true);
+  assert.equal(context.requestCompletion(), false);
+  assert.equal(context.requestCompletion(), false);
 });

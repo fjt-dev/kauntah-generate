@@ -315,7 +315,7 @@ const themeNames = Object.keys(themes) as Theme[];
       const result = completeCommand(value, cursor);
       const signature = `${result.value}\n${result.cursor}`;
       // An unchanged second Tab leaves the field normally, rather than trapping focus.
-      if (!result.candidates.length || (signature === lastCompletion && !completionPanel.hidden)) return false;
+      if (!result.candidates.length || signature === lastCompletion) return false;
       dismissCompletions();
       if (result.value.length > 1024) return false;
       setCommandLine(result.value, result.cursor);
