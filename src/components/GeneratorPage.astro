@@ -44,7 +44,7 @@ const themeNames = Object.keys(themes) as Theme[];
 <BaseLayout lang={locale} title={copy.title} description={copy.description}>
   <a class="skip-link" href="#main-content">{copy.skip}</a>
   <header class="site-header"><div class="shell header-inner">
-    <a class="brand" href={isJa ? "/ja/" : "/"} aria-label={copy.home}>Kauntah</a>
+    <a class="brand" href={isJa ? "/ja/" : "/"} aria-label={copy.home}>Kauntah Generator</a>
     <nav aria-label={copy.nav}>
       <a href="https://github.com/fjt-dev/Kauntah" target="_blank" rel="noreferrer" class="external-link">GitHub<ExternalLinkIcon /><span class="sr-only"> ({copy.newWindow})</span></a>
       <div class="language-switch" role="group" aria-label={copy.language}>
@@ -54,7 +54,7 @@ const themeNames = Object.keys(themes) as Theme[];
     </nav>
   </div></header>
   <main class="shell page" id="main-content" tabindex="-1">
-    <h1>{copy.title}</h1>
+    <h1 class="sr-only">{copy.title}</h1>
     <noscript><p class="notice">{copy.noScript}</p></noscript>
     <div class="workspace">
         <section class="preview-section" aria-labelledby="preview-title">

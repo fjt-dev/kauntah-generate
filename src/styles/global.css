@@ -179,7 +179,7 @@
     gap: 24px;
   }
   .page {
-    padding-block: 48px 72px;
+    padding-block: 32px 72px;
   }
   .workspace {
     display: grid;
@@ -279,23 +279,11 @@
 @layer components {
   /* Header */
   .brand {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
     color: var(--ink);
     font-weight: 700;
     font-size: 18px;
     letter-spacing: -0.02em;
     text-decoration: none;
-
-    &::before {
-      content: "";
-      inline-size: 10px;
-      block-size: 10px;
-      border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 0 4px var(--accent-soft);
-    }
   }
   nav {
     display: flex;
@@ -769,9 +757,6 @@
     .format-switch button[aria-selected="true"],
     .language-switch [aria-current="page"] {
       border: 2px solid Highlight;
-    }
-    .brand::before {
-      background: CanvasText;
     }
   }
 }
